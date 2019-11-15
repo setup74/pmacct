@@ -1013,27 +1013,6 @@ void P_cache_purge(struct chained_cache *queue[], int index, int safe_action)
           P_fprintf_csv_string(f, pvlen, COUNT_INT_SRC_AS_PATH, write_sep(sep, &count), empty_string);
         }
 
-        if (config.what_to_count & COUNT_LOCAL_PREF) fprintf(f, "%s%u", write_sep(sep, &count), pbgp->local_pref);
-        if (config.what_to_count & COUNT_SRC_LOCAL_PREF) fprintf(f, "%s%u", write_sep(sep, &count), pbgp->src_local_pref);
-
-        if (config.what_to_count & COUNT_MED) fprintf(f, "%s%u", write_sep(sep, &count), pbgp->med);
-        if (config.what_to_count & COUNT_SRC_MED) fprintf(f, "%s%u", write_sep(sep, &count), pbgp->src_med);
-
-        if (config.what_to_count_2 & COUNT_SRC_ROA) fprintf(f, "%s%s", write_sep(sep, &count), rpki_roa_print(pbgp->src_roa));
-        if (config.what_to_count_2 & COUNT_DST_ROA) fprintf(f, "%s%s", write_sep(sep, &count), rpki_roa_print(pbgp->dst_roa));
-
-        if (config.what_to_count & COUNT_PEER_SRC_AS) fprintf(f, "%s%u", write_sep(sep, &count), pbgp->peer_src_as);
-        if (config.what_to_count & COUNT_PEER_DST_AS) fprintf(f, "%s%u", write_sep(sep, &count), pbgp->peer_dst_as);
-  
-        if (config.what_to_count & COUNT_PEER_SRC_IP) {
-          addr_to_str(ip_address, &pbgp->peer_src_ip);
-          fprintf(f, "%s%s", write_sep(sep, &count), ip_address);
-        }
-        if (config.what_to_count & COUNT_PEER_DST_IP) {
-          addr_to_str(ip_address, &pbgp->peer_dst_ip);
-          fprintf(f, "%s%s", write_sep(sep, &count), ip_address);
-        }
-  
         if (config.what_to_count & COUNT_IN_IFACE) fprintf(f, "%s%u", write_sep(sep, &count), data->ifindex_in);
         if (config.what_to_count & COUNT_OUT_IFACE) fprintf(f, "%s%u", write_sep(sep, &count), data->ifindex_out);
   
@@ -1096,9 +1075,6 @@ void P_cache_purge(struct chained_cache *queue[], int index, int safe_action)
         }
   #endif
   
-        if (config.what_to_count_2 & COUNT_SAMPLING_RATE) fprintf(f, "%s%u", write_sep(sep, &count), data->sampling_rate);
-        if (config.what_to_count_2 & COUNT_SAMPLING_DIRECTION) fprintf(f, "%s%s", write_sep(sep, &count), data->sampling_direction);
-  
         if (config.what_to_count_2 & COUNT_POST_NAT_SRC_HOST) {
           addr_to_str(src_host, &pnat->post_nat_src_ip);
           fprintf(f, "%s%s", write_sep(sep, &count), src_host);
@@ -1145,57 +1121,11 @@ void P_cache_purge(struct chained_cache *queue[], int index, int safe_action)
         if (config.what_to_count_2 & COUNT_TUNNEL_DST_PORT) fprintf(f, "%s%u", write_sep(sep, &count), ptun->tunnel_dst_port);
 
 	if (config.what_to_count_2 & COUNT_VXLAN) fprintf(f, "%s%u", write_sep(sep, &count), ptun->tunnel_id);
-  
-        if (config.what_to_count_2 & COUNT_TIMESTAMP_START) {
-	  char tstamp_str[VERYSHORTBUFLEN];
-
-	  compose_timestamp(tstamp_str, VERYSHORTBUFLEN, &pnat->timestamp_start, TRUE,
-			    config.timestamps_since_epoch, config.timestamps_rfc3339,
-			    config.timestamps_utc);
-
-          fprintf(f, "%s%s", write_sep(sep, &count), tstamp_str);
-        }
-  
-        if (config.what_to_count_2 & COUNT_TIMESTAMP_END) {
-	  char tstamp_str[VERYSHORTBUFLEN];
-
-	  compose_timestamp(tstamp_str, VERYSHORTBUFLEN, &pnat->timestamp_end, TRUE,
-			    config.timestamps_since_epoch, config.timestamps_rfc3339,
-			    config.timestamps_utc);
-
-          fprintf(f, "%s%s", write_sep(sep, &count), tstamp_str);
-        }
-
-        if (config.what_to_count_2 & COUNT_TIMESTAMP_ARRIVAL) {
-	  char tstamp_str[VERYSHORTBUFLEN];
-
-	  compose_timestamp(tstamp_str, VERYSHORTBUFLEN, &pnat->timestamp_arrival, TRUE,
-			    config.timestamps_since_epoch, config.timestamps_rfc3339,
-			    config.timestamps_utc);
-
-          fprintf(f, "%s%s", write_sep(sep, &count), tstamp_str);
-        }
-
-        if (config.nfacctd_stitching && queue[j]->stitch) {
-	  char tstamp_str[VERYSHORTBUFLEN];
-
-	  compose_timestamp(tstamp_str, VERYSHORTBUFLEN, &queue[j]->stitch->timestamp_min, TRUE,
-			    config.timestamps_since_epoch, config.timestamps_rfc3339,
-			    config.timestamps_utc);
-
-          fprintf(f, "%s%s", write_sep(sep, &count), tstamp_str);
-
-	  compose_timestamp(tstamp_str, VERYSHORTBUFLEN, &queue[j]->stitch->timestamp_max, TRUE,
-			    config.timestamps_since_epoch, config.timestamps_rfc3339,
-			    config.timestamps_utc);
-
-          fprintf(f, "%s%s", write_sep(sep, &count), tstamp_str);
-        }
 
         if (config.what_to_count_2 & COUNT_EXPORT_PROTO_SEQNO) fprintf(f, "%s%u", write_sep(sep, &count), data->export_proto_seqno);
         if (config.what_to_count_2 & COUNT_EXPORT_PROTO_VERSION) fprintf(f, "%s%u", write_sep(sep, &count), data->export_proto_version);
         if (config.what_to_count_2 & COUNT_EXPORT_PROTO_SYSID) fprintf(f, "%s%u", write_sep(sep, &count), data->export_proto_sysid);
-  
+
         /* all custom primitives printed here */
         {
           int cp_idx;
@@ -1225,10 +1155,73 @@ void P_cache_purge(struct chained_cache *queue[], int index, int safe_action)
   #else
           fprintf(f, "%s%lu", write_sep(sep, &count), queue[j]->packet_counter);
           if (config.what_to_count & COUNT_FLOWS) fprintf(f, "%s%lu", write_sep(sep, &count), queue[j]->flow_counter);
-          fprintf(f, "%s%lu\n", write_sep(sep, &count), queue[j]->bytes_counter);
+          fprintf(f, "%s%lu", write_sep(sep, &count), queue[j]->bytes_counter);
   #endif
         }
-        else fprintf(f, "\n");
+
+        /* sampling, pbgp and timestamp infos are moved to the last */
+        if (config.what_to_count_2 & COUNT_SAMPLING_RATE) fprintf(f, "%s%u", write_sep(sep, &count), data->sampling_rate);
+        if (config.what_to_count_2 & COUNT_SAMPLING_DIRECTION) fprintf(f, "%s%s", write_sep(sep, &count), data->sampling_direction);
+        if (config.what_to_count & COUNT_LOCAL_PREF) fprintf(f, "%s%u", write_sep(sep, &count), pbgp->local_pref);
+        if (config.what_to_count & COUNT_SRC_LOCAL_PREF) fprintf(f, "%s%u", write_sep(sep, &count), pbgp->src_local_pref);
+        if (config.what_to_count & COUNT_MED) fprintf(f, "%s%u", write_sep(sep, &count), pbgp->med);
+        if (config.what_to_count & COUNT_SRC_MED) fprintf(f, "%s%u", write_sep(sep, &count), pbgp->src_med);
+        if (config.what_to_count_2 & COUNT_SRC_ROA) fprintf(f, "%s%s", write_sep(sep, &count), rpki_roa_print(pbgp->src_roa));
+        if (config.what_to_count_2 & COUNT_DST_ROA) fprintf(f, "%s%s", write_sep(sep, &count), rpki_roa_print(pbgp->dst_roa));
+        if (config.what_to_count & COUNT_PEER_SRC_AS) fprintf(f, "%s%u", write_sep(sep, &count), pbgp->peer_src_as);
+        if (config.what_to_count & COUNT_PEER_DST_AS) fprintf(f, "%s%u", write_sep(sep, &count), pbgp->peer_dst_as);
+        if (config.what_to_count & COUNT_PEER_SRC_IP) {
+          addr_to_str(ip_address, &pbgp->peer_src_ip);
+          fprintf(f, "%s%s", write_sep(sep, &count), ip_address);
+        }
+        if (config.what_to_count & COUNT_PEER_DST_IP) {
+          addr_to_str(ip_address, &pbgp->peer_dst_ip);
+          fprintf(f, "%s%s", write_sep(sep, &count), ip_address);
+        }
+        if (config.what_to_count_2 & COUNT_TIMESTAMP_ARRIVAL) {
+	  char tstamp_str[VERYSHORTBUFLEN];
+
+	  compose_timestamp(tstamp_str, VERYSHORTBUFLEN, &pnat->timestamp_arrival, TRUE,
+			    config.timestamps_since_epoch, config.timestamps_rfc3339,
+			    config.timestamps_utc);
+
+          fprintf(f, "%s%s", write_sep(sep, &count), tstamp_str);
+        }
+        if (config.what_to_count_2 & COUNT_TIMESTAMP_START) {
+	  char tstamp_str[VERYSHORTBUFLEN];
+
+	  compose_timestamp(tstamp_str, VERYSHORTBUFLEN, &pnat->timestamp_start, TRUE,
+			    config.timestamps_since_epoch, config.timestamps_rfc3339,
+			    config.timestamps_utc);
+
+          fprintf(f, "%s%s", write_sep(sep, &count), tstamp_str);
+        }
+        if (config.what_to_count_2 & COUNT_TIMESTAMP_END) {
+	  char tstamp_str[VERYSHORTBUFLEN];
+
+	  compose_timestamp(tstamp_str, VERYSHORTBUFLEN, &pnat->timestamp_end, TRUE,
+			    config.timestamps_since_epoch, config.timestamps_rfc3339,
+			    config.timestamps_utc);
+
+          fprintf(f, "%s%s", write_sep(sep, &count), tstamp_str);
+        }
+        if (config.nfacctd_stitching && queue[j]->stitch) {
+	  char tstamp_str[VERYSHORTBUFLEN];
+
+	  compose_timestamp(tstamp_str, VERYSHORTBUFLEN, &queue[j]->stitch->timestamp_min, TRUE,
+			    config.timestamps_since_epoch, config.timestamps_rfc3339,
+			    config.timestamps_utc);
+
+          fprintf(f, "%s%s", write_sep(sep, &count), tstamp_str);
+
+	  compose_timestamp(tstamp_str, VERYSHORTBUFLEN, &queue[j]->stitch->timestamp_max, TRUE,
+			    config.timestamps_since_epoch, config.timestamps_rfc3339,
+			    config.timestamps_utc);
+
+          fprintf(f, "%s%s", write_sep(sep, &count), tstamp_str);
+        }
+  
+        fprintf(f, "\n");
       }
       else if (f && config.print_output & PRINT_OUTPUT_JSON) {
 #ifdef WITH_JANSSON
@@ -1492,16 +1485,7 @@ void P_write_stats_header_csv(FILE *f, int is_event)
   if (config.what_to_count_2 & COUNT_SRC_LRG_COMM) fprintf(f, "%sSRC_LCOMMS", write_sep(sep, &count));
   if (config.what_to_count & COUNT_AS_PATH) fprintf(f, "%sAS_PATH", write_sep(sep, &count));
   if (config.what_to_count & COUNT_SRC_AS_PATH) fprintf(f, "%sSRC_AS_PATH", write_sep(sep, &count));
-  if (config.what_to_count & COUNT_LOCAL_PREF) fprintf(f, "%sPREF", write_sep(sep, &count));
-  if (config.what_to_count & COUNT_SRC_LOCAL_PREF) fprintf(f, "%sSRC_PREF", write_sep(sep, &count));
-  if (config.what_to_count & COUNT_MED) fprintf(f, "%sMED", write_sep(sep, &count));
-  if (config.what_to_count & COUNT_SRC_MED) fprintf(f, "%sSRC_MED", write_sep(sep, &count));
-  if (config.what_to_count_2 & COUNT_SRC_ROA) fprintf(f, "%sSRC_ROA", write_sep(sep, &count));
-  if (config.what_to_count_2 & COUNT_DST_ROA) fprintf(f, "%sDST_ROA", write_sep(sep, &count));
-  if (config.what_to_count & COUNT_PEER_SRC_AS) fprintf(f, "%sPEER_SRC_AS", write_sep(sep, &count));
-  if (config.what_to_count & COUNT_PEER_DST_AS) fprintf(f, "%sPEER_DST_AS", write_sep(sep, &count));
-  if (config.what_to_count & COUNT_PEER_SRC_IP) fprintf(f, "%sPEER_SRC_IP", write_sep(sep, &count));
-  if (config.what_to_count & COUNT_PEER_DST_IP) fprintf(f, "%sPEER_DST_IP", write_sep(sep, &count));
+
   if (config.what_to_count & COUNT_IN_IFACE) fprintf(f, "%sIN_IFACE", write_sep(sep, &count));
   if (config.what_to_count & COUNT_OUT_IFACE) fprintf(f, "%sOUT_IFACE", write_sep(sep, &count));
   if (config.what_to_count & COUNT_MPLS_VPN_RD) fprintf(f, "%sMPLS_VPN_RD", write_sep(sep, &count));
@@ -1533,8 +1517,6 @@ void P_write_stats_header_csv(FILE *f, int is_event)
     fprintf(f, "%sDH_LON", write_sep(sep, &count));
   }
 #endif
-  if (config.what_to_count_2 & COUNT_SAMPLING_RATE) fprintf(f, "%sSAMPLING_RATE", write_sep(sep, &count));
-  if (config.what_to_count_2 & COUNT_SAMPLING_DIRECTION) fprintf(f, "%sSAMPLING_DIRECTION", write_sep(sep, &count));
   if (config.what_to_count_2 & COUNT_POST_NAT_SRC_HOST) fprintf(f, "%sPOST_NAT_SRC_IP", write_sep(sep, &count));
   if (config.what_to_count_2 & COUNT_POST_NAT_DST_HOST) fprintf(f, "%sPOST_NAT_DST_IP", write_sep(sep, &count));
   if (config.what_to_count_2 & COUNT_POST_NAT_SRC_PORT) fprintf(f, "%sPOST_NAT_SRC_PORT", write_sep(sep, &count));
@@ -1552,13 +1534,6 @@ void P_write_stats_header_csv(FILE *f, int is_event)
   if (config.what_to_count_2 & COUNT_TUNNEL_SRC_PORT) fprintf(f, "%sTUNNEL_SRC_PORT", write_sep(sep, &count));
   if (config.what_to_count_2 & COUNT_TUNNEL_DST_PORT) fprintf(f, "%sTUNNEL_DST_PORT", write_sep(sep, &count));
   if (config.what_to_count_2 & COUNT_VXLAN) fprintf(f, "%sVXLAN", write_sep(sep, &count));
-  if (config.what_to_count_2 & COUNT_TIMESTAMP_START) fprintf(f, "%sTIMESTAMP_START", write_sep(sep, &count));
-  if (config.what_to_count_2 & COUNT_TIMESTAMP_END) fprintf(f, "%sTIMESTAMP_END", write_sep(sep, &count));
-  if (config.what_to_count_2 & COUNT_TIMESTAMP_ARRIVAL) fprintf(f, "%sTIMESTAMP_ARRIVAL", write_sep(sep, &count));
-  if (config.nfacctd_stitching) {
-    fprintf(f, "%sTIMESTAMP_MIN", write_sep(sep, &count));
-    fprintf(f, "%sTIMESTAMP_MAX", write_sep(sep, &count));
-  }
   if (config.what_to_count_2 & COUNT_EXPORT_PROTO_SEQNO) fprintf(f, "%sEXPORT_PROTO_SEQNO", write_sep(sep, &count));
   if (config.what_to_count_2 & COUNT_EXPORT_PROTO_VERSION) fprintf(f, "%sEXPORT_PROTO_VERSION", write_sep(sep, &count));
   if (config.what_to_count_2 & COUNT_EXPORT_PROTO_SYSID) fprintf(f, "%sEXPORT_PROTO_SYSID", write_sep(sep, &count));
@@ -1577,9 +1552,31 @@ void P_write_stats_header_csv(FILE *f, int is_event)
   if (!is_event) {
     fprintf(f, "%sPACKETS", write_sep(sep, &count));
     if (config.what_to_count & COUNT_FLOWS) fprintf(f, "%sFLOWS", write_sep(sep, &count));
-    fprintf(f, "%sBYTES\n", write_sep(sep, &count));
+    fprintf(f, "%sBYTES", write_sep(sep, &count));
   }
-  else fprintf(f, "\n");
+
+  /* sampling, pbgp infos are moved to the last */
+  if (config.what_to_count_2 & COUNT_SAMPLING_RATE) fprintf(f, "%sSAMPLING_RATE", write_sep(sep, &count));
+  if (config.what_to_count_2 & COUNT_SAMPLING_DIRECTION) fprintf(f, "%sSAMPLING_DIRECTION", write_sep(sep, &count));
+  if (config.what_to_count & COUNT_LOCAL_PREF) fprintf(f, "%sPREF", write_sep(sep, &count));
+  if (config.what_to_count & COUNT_SRC_LOCAL_PREF) fprintf(f, "%sSRC_PREF", write_sep(sep, &count));
+  if (config.what_to_count & COUNT_MED) fprintf(f, "%sMED", write_sep(sep, &count));
+  if (config.what_to_count & COUNT_SRC_MED) fprintf(f, "%sSRC_MED", write_sep(sep, &count));
+  if (config.what_to_count_2 & COUNT_SRC_ROA) fprintf(f, "%sSRC_ROA", write_sep(sep, &count));
+  if (config.what_to_count_2 & COUNT_DST_ROA) fprintf(f, "%sDST_ROA", write_sep(sep, &count));
+  if (config.what_to_count & COUNT_PEER_SRC_AS) fprintf(f, "%sPEER_SRC_AS", write_sep(sep, &count));
+  if (config.what_to_count & COUNT_PEER_DST_AS) fprintf(f, "%sPEER_DST_AS", write_sep(sep, &count));
+  if (config.what_to_count & COUNT_PEER_SRC_IP) fprintf(f, "%sPEER_SRC_IP", write_sep(sep, &count));
+  if (config.what_to_count & COUNT_PEER_DST_IP) fprintf(f, "%sPEER_DST_IP", write_sep(sep, &count));
+  if (config.what_to_count_2 & COUNT_TIMESTAMP_ARRIVAL) fprintf(f, "%sTIMESTAMP_ARRIVAL", write_sep(sep, &count));
+  if (config.what_to_count_2 & COUNT_TIMESTAMP_START) fprintf(f, "%sTIMESTAMP_START", write_sep(sep, &count));
+  if (config.what_to_count_2 & COUNT_TIMESTAMP_END) fprintf(f, "%sTIMESTAMP_END", write_sep(sep, &count));
+  if (config.nfacctd_stitching) {
+    fprintf(f, "%sTIMESTAMP_MIN", write_sep(sep, &count));
+    fprintf(f, "%sTIMESTAMP_MAX", write_sep(sep, &count));
+  }
+
+  fprintf(f, "\n");
 }
 
 void P_fprintf_csv_string(FILE *f, struct pkt_vlen_hdr_primitives *pvlen, pm_cfgreg_t wtc, char *sep, char *empty_string)
