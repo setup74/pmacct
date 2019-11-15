@@ -1151,7 +1151,7 @@ void P_cache_purge(struct chained_cache *queue[], int index, int safe_action)
   #if defined HAVE_64BIT_COUNTERS
           fprintf(f, "%s%" PRIu64 "", write_sep(sep, &count), queue[j]->packet_counter);
           if (config.what_to_count & COUNT_FLOWS) fprintf(f, "%s%" PRIu64 "", write_sep(sep, &count), queue[j]->flow_counter);
-          fprintf(f, "%s%" PRIu64 "\n", write_sep(sep, &count), queue[j]->bytes_counter);
+          fprintf(f, "%s%" PRIu64 "", write_sep(sep, &count), queue[j]->bytes_counter);
   #else
           fprintf(f, "%s%lu", write_sep(sep, &count), queue[j]->packet_counter);
           if (config.what_to_count & COUNT_FLOWS) fprintf(f, "%s%lu", write_sep(sep, &count), queue[j]->flow_counter);
